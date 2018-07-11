@@ -1,7 +1,9 @@
 import firebase from 'firebase';
 import { 
 	EMAIL_CHANGED ,
-	PASSWORD_CHANGED
+	PASSWORD_CHANGED,
+	LOGIN_USER_SUCCESS,
+	LOGIN_USER_FAIL
 } from './types';
 
 export const emailChanged = (text) => {
@@ -22,12 +24,27 @@ export const loginUser = ({ email, password }) => {
 	return (dispatch) => {
 		// making call to firebase servers for authentication
 		firebase.auth().signInWithEmailAndPassword(email, password)
-			.then(user => {
-				// after request is complete, then:
-				dispatch({ type: 'LOGIN_USER_SUCCESS', payload: user});
+			// .then runs if user successfully logged in
+			.then(user => loginUserSuccess(dispatch, user))
+			// .catch runs if initial attempt fails, so we attempt to create an account as well
+			.catch(() => {
+				firebase.auth().createUserWithEmailAndPassword(email, password)
+					.then(user => loginUserSuccess(dispatch, user))
+					.catch(() => loginUserFail(dispatch));
 			});
 	};
 };
+
+const loginUserSuccess = (dispatch, user) => {
+	dispatch({
+		type: LOGIN_USER_SUCCESS,
+		payload: user
+	});
+};
+
+const loginUserFail = (dispatch) => {
+	dispatch({ type: LOGIN_USER_FAIL });
+}
 
 
 // redux thunk is used to handle any async action creator
