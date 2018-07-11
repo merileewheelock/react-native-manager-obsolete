@@ -18,8 +18,18 @@ export const passwordChanged = (text) => {
 	};
 };
 
-export const loginUser = ({ email, password }) = {
-	// making call to firebase servers
-	firebase.auth().signInWithEmailAndPassword(email, password)
-		.then(user => console.log(user));
+export const loginUser = ({ email, password }) => {
+	return (dispatch) => {
+		// making call to firebase servers for authentication
+		firebase.auth().signInWithEmailAndPassword(email, password)
+			.then(user => {
+				// after request is complete, then:
+				dispatch({ type: 'LOGIN_USER_SUCCESS', payload: user});
+			});
+	};
 };
+
+
+// redux thunk is used to handle any async action creator
+// currently using for firebase, but can be used for any ajax request
+// npm module: npm install --save redux-thunk
